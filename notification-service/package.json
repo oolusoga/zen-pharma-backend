@@ -1,0 +1,34 @@
+{
+  "name": "notification-service",
+  "version": "1.0.0",
+  "description": "Pharma notification service for email and SMS alerts",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.7",
+    "prom-client": "^15.1.0",
+    "winston": "^3.11.0",
+    "dotenv": "^16.3.1",
+    "joi": "^17.11.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3",
+    "eslint": "^8.56.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/tests/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["lcov", "text", "clover"]
+  }
+}

@@ -1,0 +1,55 @@
+version: 2
+updates:
+  # API Gateway (Maven)
+  - package-ecosystem: "maven"
+    directory: "/api-gateway"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "api-gateway"
+
+  # Auth Service (Maven)
+  - package-ecosystem: "maven"
+    directory: "/auth-service"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "auth-service"
+
+  # Drug Catalog Service (Maven)
+  - package-ecosystem: "maven"
+    directory: "/drug-catalog-service"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "drug-catalog-service"
+
+  # Notification Service (npm)
+  - package-ecosystem: "npm"
+    directory: "/notification-service"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "notification-service"
+
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "ci"
