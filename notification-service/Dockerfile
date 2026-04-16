@@ -2,7 +2,6 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
-
 FROM node:20-alpine
 WORKDIR /app
 RUN addgroup -S pharma && adduser -S pharma -G pharma
