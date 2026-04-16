@@ -1,0 +1,128 @@
+# Reusable — Lightweight Java PR / Feature Branch Check
+#
+# Used by ci-pr-<service>.yml workflows on feat-*, fix-*, chore-* branches and PRs.
+# Intentionally stops before Docker — no image build, no ECR push, no Cosign.
+# Goal: fast feedback (~5 min) for developers without burning ECR storage or runner time.
+#
+# Stages:
+#   1. Maven verify  — unit/integration tests + JaCoCo coverage
+#   2. CodeQL        — Java security-extended SAST
+#   3. Semgrep       — java · owasp-top-ten · spring-boot rules
+#   4. OWASP Dep Chk — fail if any dependency CVSS ≥ 7.0
+
+name: Reusable — Java PR Check (no Docker)
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+      service-dir:
+        required: true
+        type: string
+      needs-database:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      SEMGREP_APP_TOKEN:
+        required: false
+
+jobs:
+  pr-check:
+    name: PR Check (${{ inputs.service-name }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+
+      - name: Start PostgreSQL (integration tests)
+        if: ${{ inputs.needs-database }}
+        run: |
+          docker run -d \
+            --name testdb \
+            -e POSTGRES_DB=testdb \
+            -e POSTGRES_USER=testuser \
+            -e POSTGRES_PASSWORD=testpass \
+            -p 5432:5432 \
+            postgres:15-alpine
+          until docker exec testdb pg_isready -U testuser 2>/dev/null; do sleep 2; done
+          echo "PostgreSQL ready."
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+          queries: security-extended
+
+      - name: Maven verify (tests + JaCoCo coverage)
+        run: cd ${{ inputs.service-dir }} && mvn verify --no-transfer-progress
+        env:
+          SPRING_DATASOURCE_URL:      ${{ inputs.needs-database && 'jdbc:postgresql://localhost:5432/testdb' || '' }}
+          SPRING_DATASOURCE_USERNAME: ${{ inputs.needs-database && 'testuser' || '' }}
+          SPRING_DATASOURCE_PASSWORD: ${{ inputs.needs-database && 'testpass' || '' }}
+
+      - name: Upload JaCoCo coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ inputs.service-name }}
+          path: ${{ inputs.service-dir }}/target/site/jacoco/
+          retention-days: 3
+
+      - name: CodeQL — Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:java
+
+      - name: Semgrep SAST (java · owasp-top-ten)
+        uses: semgrep/semgrep-action@v1
+        continue-on-error: true
+        with:
+          config: >-
+            p/java
+            p/owasp-top-ten
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      # ── OWASP Dependency Check (disabled — NVD database download too slow
+      #    without API key; re-enable after adding NVD_API_KEY secret) ────────
+      - name: Cache OWASP NVD database
+        if: false
+        uses: actions/cache@v4
+        with:
+          path: ~/.owasp/dependency-check-data
+          key: owasp-nvd-${{ runner.os }}-${{ hashFiles(format('{0}/pom.xml', inputs.service-dir)) }}
+          restore-keys: owasp-nvd-${{ runner.os }}-
+
+      - name: OWASP Dependency Check (CVSS ≥ 7.0 fails build)
+        if: false
+        run: |
+          cd ${{ inputs.service-dir }}
+          mvn org.owasp:dependency-check-maven:check \
+            -DfailBuildOnCVSS=7 \
+            -DenableRetired=true \
+            -DdataDirectory=$HOME/.owasp/dependency-check-data \
+            -Dformat=HTML \
+            --no-transfer-progress
+
+      - name: Upload Dependency Check report
+        if: false
+        uses: actions/upload-artifact@v4
+        with:
+          name: depcheck-${{ inputs.service-name }}
+          path: ${{ inputs.service-dir }}/target/dependency-check-report.html
+          retention-days: 3

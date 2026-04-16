@@ -19,14 +19,18 @@ app.get('/metrics', async (req, res) => {
 });
 
 app.get('/actuator/health', (req, res) => {
-  res.json({ status: 'UP', service: 'notification-service' });
+  res.json({ status: 'UP', service: 'notification-service', version: process.env.npm_package_version || '1.0.0' });
 });
 
 app.get('/actuator/health/readiness', (req, res) => {
-  res.json({ status: 'UP' });
+  res.json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-app.use((err, req, res, next) => {
+app.get('/actuator/health/liveness', (req, res) => {
+  res.json({ status: 'UP', uptime: process.uptime() });
+});
+
+app.use((err, req, res, _next) => {
   logger.error(err.message);
   res.status(500).json({ error: 'Internal server error' });
 });
