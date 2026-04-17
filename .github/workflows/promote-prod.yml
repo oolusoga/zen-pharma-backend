@@ -1,7 +1,7 @@
 name: Promote to PROD
 
 # Triggered manually — picks up the image currently running in QA and opens
-# a PR in chandika-s/zen-gitops to promote it to PROD.
+# a PR in the GitOps repo (vars.GITOPS_REPO) to promote it to PROD.
 # PROD ArgoCD app (pharma-prod) requires manual sync after merge.
 
 on:
@@ -25,7 +25,7 @@ permissions:
   contents: read
 
 env:
-  GITOPS_REPO: chandika-s/zen-gitops
+  GITOPS_REPO: ${{ vars.GITOPS_REPO }}
 
 jobs:
 
@@ -75,11 +75,12 @@ jobs:
       - name: Validate PROD values file exists
         env:
           SVC: ${{ inputs.service }}
+          GITOPS_REPO_NAME: ${{ env.GITOPS_REPO }}
         run: |
           PROD_VALUES="_gitops/envs/prod/values-${SVC}.yaml"
           if [[ ! -f "$PROD_VALUES" ]]; then
             echo "::error::PROD values file not found: ${PROD_VALUES}"
-            echo "::error::Create envs/prod/values-${SVC}.yaml in chandika-s/zen-gitops to enable PROD promotion."
+            echo "::error::Create envs/prod/values-${SVC}.yaml in ${GITOPS_REPO_NAME} to enable PROD promotion."
             exit 1
           fi
           echo "PROD_VALUES=envs/prod/values-${SVC}.yaml" >> "$GITHUB_ENV"
@@ -136,4 +137,4 @@ jobs:
             --base main \
             --head "$BRANCH"
 
-          echo "::notice title=PROD PR opened::Review, get approvals, and merge in chandika-s/zen-gitops. Then manually sync ArgoCD pharma-prod/${SVC}."
+          echo "::notice title=PROD PR opened::Review, get approvals, and merge in ${GITOPS_REPO_NAME}. Then manually sync ArgoCD pharma-prod/${SVC}."

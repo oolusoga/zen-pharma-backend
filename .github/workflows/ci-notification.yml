@@ -20,7 +20,7 @@ permissions:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: notification-service
-  GITOPS_REPO: chandika-s/zen-gitops
+  GITOPS_REPO: ${{ vars.GITOPS_REPO }}
 
 jobs:
 
@@ -134,4 +134,4 @@ jobs:
             --base main \
             --head "$BRANCH"
 
-          echo "::notice title=QA PR opened::Review and merge in chandika-s/zen-gitops to deploy to QA."
+          echo "::notice title=QA PR opened::Review and merge in ${GITOPS_REPO_NAME} to deploy to QA."
