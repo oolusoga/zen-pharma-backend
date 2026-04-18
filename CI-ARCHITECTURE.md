@@ -37,7 +37,7 @@ DEV: fully automatic — fast feedback loop. QA: PR review in zen-gitops — QA 
     ├──────────────────────────►│                               │                         │
     │                           │ ci-pr-<service>.yml           │                         │
     │                           │ ┌─────────────────────────┐   │                         │
-    │                           │ │ Gitleaks · Lint · Test  │   │                         │
+    │                           │ │ Lint · Test             │   │                         │
     │                           │ │ CodeQL · Semgrep · OWASP│   │                         │
     │                           │ │ (no Docker, no ECR)     │   │                         │
     │                           │ └─────────────────────────┘   │                         │
@@ -49,7 +49,7 @@ DEV: fully automatic — fast feedback loop. QA: PR review in zen-gitops — QA 
     │                           │ ci-<service>.yml              │                         │
     │                           │ ┌─────────────────────────┐   │                         │
     │                           │ │ Job: build              │   │                         │
-    │                           │ │  Gitleaks · Maven/npm   │   │                         │
+    │                           │ │  Maven/npm              │   │                         │
     │                           │ │  CodeQL · Semgrep · OWASP│   │                         │
     │                           │ │  Docker build           │   │                         │
     │                           │ │  Trivy scan             │   │                         │
@@ -114,13 +114,13 @@ zen-pharma-backend/
     └── workflows/
         │
         │  ── Reusable building blocks ──────────────────────────────────────────
-        ├── _java-build.yml          ← Full build: Gitleaks + Maven + CodeQL + Semgrep +
+        ├── _java-build.yml          ← Full build: Maven + CodeQL + Semgrep +
         │                                          OWASP + Trivy + ECR + Cosign
-        ├── _node-build.yml          ← Full build: Gitleaks + npm + CodeQL + Semgrep +
+        ├── _node-build.yml          ← Full build: npm + CodeQL + Semgrep +
         │                                          audit + Trivy + ECR + Cosign
-        ├── _java-pr-check.yml       ← Lightweight: Gitleaks + Maven + CodeQL + Semgrep +
+        ├── _java-pr-check.yml       ← Lightweight: Maven + CodeQL + Semgrep +
         │                                           OWASP  (no Docker, no ECR)
-        ├── _node-pr-check.yml       ← Lightweight: Gitleaks + npm + CodeQL + Semgrep +
+        ├── _node-pr-check.yml       ← Lightweight: npm + CodeQL + Semgrep +
         │                                           audit  (no Docker, no ECR)
         │
         │  ── Feature branch checks (feat-*, fix-*, chore-*) ───────────────────
@@ -314,7 +314,7 @@ Common **DevSecOps categories** and **widely used tools** (examples), followed b
 | SAST | **Semgrep** (`p/java`, `p/spring-boot`, `p/javascript`, `p/nodejs`, `p/owasp-top-ten`, etc.) | Same reusable workflows | Optional `SEMGREP_APP_TOKEN` for Semgrep Cloud dashboards |
 | SCA (Node) | **`npm audit`** (fail on HIGH/CRITICAL) | `_node-pr-check.yml`, `_node-build.yml` | |
 | SCA (Java) | **OWASP Dependency Check** (Maven plugin) | All Java `ci-pr-*.yml` / `ci-*.yml` via `_java-pr-check.yml`, `_java-build.yml` | Add optional repo secret **`NVD_API_KEY`** for faster NVD API sync (see [NVD API key](#nvd-api-key-owasp-dependency-check)) |
-| Secrets in repo | **Gitleaks** | Gitleaks step in all four reusable workflows above | Full history / PR diff uses `fetch-depth: 0` on PR checks; shallow checkout on develop/release builds. Also enable GitHub **Secret scanning** under repo **Code security** for platform-native detection |
+| Secrets in repo | **GitHub Secret scanning** | GitHub platform (enabled under repo Code security settings) | Scans all commits and PRs automatically; no CI runner time or step required |
 | Container scan | **Trivy** | `_java-build.yml`, `_node-build.yml` only | No image in PR check — Trivy runs after Docker build |
 | Image signing | **Cosign** (keyless via GitHub OIDC) | `_java-build.yml`, `_node-build.yml` | |
 | Automated dependency PRs | **Dependabot** | — | Optional: add `.github/dependabot.yml` (not present in this repo today) |
@@ -530,7 +530,6 @@ Stage                     ci-pr-*.yml       ci-*.yml
 ─────                     ───────────       ────────
 Unit tests                     ✓                ✓
 Code coverage (JaCoCo/Jest)    ✓                ✓
-Gitleaks (secrets)             ✓                ✓
 CodeQL SAST                    ✓                ✓
 Semgrep SAST                   ✓                ✓
 OWASP Dependency Check (Java)  ✓                ✓

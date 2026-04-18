@@ -4,12 +4,11 @@
 # No Docker, no ECR, no Cosign. Fast feedback for developers.
 #
 # Stages:
-#   1. Gitleaks      — secret scan (repo + PR diff when applicable)
-#   2. ESLint        — lint (--max-warnings 0)
-#   3. Jest          — unit tests + coverage
-#   4. CodeQL        — JavaScript security-extended SAST
-#   5. Semgrep       — javascript · nodejs · owasp-top-ten rules
-#   6. npm audit     — fail on HIGH/CRITICAL vulnerabilities
+#   1. ESLint        — lint (--max-warnings 0)
+#   2. Jest          — unit tests + coverage
+#   3. CodeQL        — JavaScript security-extended SAST
+#   4. Semgrep       — javascript · nodejs · owasp-top-ten rules
+#   5. npm audit     — fail on HIGH/CRITICAL vulnerabilities
 
 name: Reusable — Node.js PR Check (no Docker)
 

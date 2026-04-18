@@ -5,11 +5,10 @@
 # Goal: fast feedback (~5 min) for developers without burning ECR storage or runner time.
 #
 # Stages:
-#   1. Gitleaks      — secret scan (repo + PR diff when applicable)
-#   2. Maven verify  — unit/integration tests + JaCoCo coverage
-#   3. CodeQL        — Java security-extended SAST
-#   4. Semgrep       — java · owasp-top-ten · spring-boot rules
-#   5. OWASP Dep Chk — CVSS ≥ 7.0 reported (non-blocking; add NVD_API_KEY for faster NVD sync)
+#   1. Maven verify  — unit/integration tests + JaCoCo coverage
+#   2. CodeQL        — Java security-extended SAST
+#   3. Semgrep       — java · owasp-top-ten · spring-boot rules
+#   4. OWASP Dep Chk — CVSS ≥ 7.0 reported (non-blocking; add NVD_API_KEY for faster NVD sync)
 
 name: Reusable — Java PR Check (no Docker)
 
