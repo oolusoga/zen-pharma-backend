@@ -139,3 +139,30 @@ jobs:
             --head "$BRANCH"
 
           echo "::notice title=QA PR opened::Review and merge in ${GITOPS_REPO_NAME} to deploy to QA."
+
+  # ── 4. DAST — ZAP baseline scan against DEV ─────────────────────────────────
+  # Disabled. Enable by removing `if: false` once DEV_DRUG_CATALOG_URL is set in
+  # GitHub repository variables (Settings → Secrets and variables → Variables).
+  dast:
+    name: DAST — ZAP Baseline (DEV)
+    if: false
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for DEV service to be healthy
+        run: |
+          URL="${{ vars.DEV_DRUG_CATALOG_URL }}/actuator/health"
+          for i in $(seq 1 20); do
+            curl -sf "$URL" && echo "Healthy" && exit 0
+            echo "Attempt $i/20 — retrying in 15s..."
+            sleep 15
+          done
+          echo "::error::DEV endpoint not healthy after 5 minutes"
+          exit 1
+
+      - name: OWASP ZAP — Baseline scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: ${{ vars.DEV_DRUG_CATALOG_URL }}
+          fail_action: warn
+          artifact_name: zap-report-drug-catalog

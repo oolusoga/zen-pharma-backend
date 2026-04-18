@@ -222,7 +222,6 @@ Complete these using **zen-infra** where possible; use the AWS CLI only for step
 |--------|----------|---------|
 | `AWS_ACCOUNT_ID` | Yes | Used in `role-to-assume` ARN and ECR URL construction |
 | `GITOPS_TOKEN` | Yes | PAT or GitHub App token with **`contents: write`** (and ability to open PRs) on **`YOUR_ORG/zen-gitops`** |
-| `SEMGREP_APP_TOKEN` | No | Semgrep Cloud; OSS rules can run without it |
 
 The workflows check out zen-gitops, commit, push, and use `gh pr create`. Ensure the token can push branches and open pull requests in the gitops repository.
 

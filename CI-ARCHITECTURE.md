@@ -318,8 +318,9 @@ Common **DevSecOps categories** and **widely used tools** (examples), followed b
 | Container scan | **Trivy** | `_java-build.yml`, `_node-build.yml` only | No image in PR check — Trivy runs after Docker build |
 | Image signing | **Cosign** (keyless via GitHub OIDC) | `_java-build.yml`, `_node-build.yml` | |
 | Automated dependency PRs | **Dependabot** | — | Optional: add `.github/dependabot.yml` (not present in this repo today) |
+| DAST (dynamic application security) | **OWASP ZAP** (baseline scan) | `ci-*.yml` — `dast` job, runs after `deploy-dev` | Currently disabled (`if: false`). Enable per-service by setting `DEV_<SERVICE>_URL` in repo variables and removing `if: false`. Uses `zaproxy/action-baseline@v0.12.0` with `fail_action: warn`. |
 
-> **Not covered by this build pipeline:** DAST and production-only runtime tests are out of scope for the workflows above; they are usually run against a deployed environment on a separate schedule or gate.
+> **DAST activation checklist:** (1) Set `DEV_<SERVICE>_URL` in GitHub repo variables. (2) Remove `if: false` from the `dast` job in the relevant `ci-*.yml`. (3) Tune `.zap/rules.tsv` after first run to suppress false positives.
 
 ---
 
@@ -540,6 +541,7 @@ ECR push                       ✗                ✓
 Cosign sign                    ✗                ✓
 GitOps DEV update              ✗                ✓
 QA promotion PR                ✗                ✓
+DAST — ZAP baseline            ✗                ✗ (disabled — if: false)
 
 Approx. runtime                ~5 min           ~15 min
 ```

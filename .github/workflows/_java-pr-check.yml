@@ -107,7 +107,6 @@ jobs:
       # ── OWASP Dependency Check ────────────────────────────────────────────────
       # Optional repo secret NVD_API_KEY — higher NVD rate limits; see CI-ARCHITECTURE.md
       - name: Cache OWASP NVD database
-        if: false  # disabled — NVD API timeouts on initial DB download
         uses: actions/cache@v4
         with:
           path: ~/.owasp/dependency-check-data
@@ -115,21 +114,20 @@ jobs:
           restore-keys: owasp-nvd-${{ runner.os }}-
 
       - name: OWASP Dependency Check (CVSS ≥ 7.0 — advisory; non-blocking)
-        if: false  # disabled — NVD API timeouts on initial DB download
         continue-on-error: true
         run: |
           cd ${{ inputs.service-dir }}
           mvn org.owasp:dependency-check-maven:check \
             -DfailBuildOnCVSS=7 \
             -DenableRetired=true \
+            -DnvdApiKey=${{ secrets.NVD_API_KEY }} \
+            -DnvdApiDelay=1000 \
             -DdataDirectory=$HOME/.owasp/dependency-check-data \
             -Dformat=HTML \
             --no-transfer-progress
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Upload Dependency Check report
-        if: false  # disabled — NVD API timeouts on initial DB download
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: depcheck-${{ inputs.service-name }}
