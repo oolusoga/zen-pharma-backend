@@ -168,3 +168,4 @@ See [`zen-infra/docs/FULL-DEPLOYMENT-GUIDE.md`](https://github.com/your-github-u
 2. Install K8s prerequisites (scripts in zen-infra)
 3. CI pipeline (this repo — auto-triggered on push to develop)
 4. ArgoCD CD (zen-gitops — ArgoCD watches this after step 2 setup)
+# CI test
